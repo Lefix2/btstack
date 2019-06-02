@@ -3,7 +3,7 @@ BTSTACK_ROOT ?= ../..
 
 CORE += main.c btstack_stdin_posix.c btstack_tlv_posix.c
 
-COMMON += hci_transport_h2_libusb.c btstack_run_loop_posix.c le_device_db_fs.c btstack_link_key_db_fs.c wav_util.c btstack_network_posix.c
+COMMON += hci_transport_h2_libusb.c btstack_run_loop_posix.c le_device_db_fs.c btstack_link_key_db_fs.c wav_util.c
 COMMON += btstack_audio_portaudio.c btstack_chipset_zephyr.c
 
 include ${BTSTACK_ROOT}/example/Makefile.inc
@@ -36,6 +36,26 @@ EXAMPLES += csr_set_bd_addr
 
 csr_set_bd_addr: ${CORE_OBJ} ${COMMON_OBJ} btstack_chipset_csr.o csr_set_bd_addr.o
 	${CC} $^ ${CFLAGS} ${LDFLAGS} -o $@
+
+# PAN LWIP Demo
+
+CFLAGS += -I${BTSTACK_ROOT}/3rd-party/lwip/src/include/
+VPATH  +=   ${BTSTACK_ROOT}/3rd-party/lwip/src/core/
+VPATH  +=   ${BTSTACK_ROOT}/3rd-party/lwip/src/core/ipv4
+VPATH  +=   ${BTSTACK_ROOT}/3rd-party/lwip/src/core/ipv6
+VPATH  +=   ${BTSTACK_ROOT}/3rd-party/lwip/src/netif
+CFLAGS += -I${BTSTACK_ROOT}/platform/lwip
+VPATH  +=   ${BTSTACK_ROOT}/platform/lwip
+LWIP_CORE_SRC  = init.c mem.c memp.c netif.c udp.c ip.c pbuf.c inet_chksum.c def.c tcp.c tcp_in.c tcp_out.c timeouts.c sys_arch.c
+LWIP_IPV4_SRC  = acd.c dhcp.c etharp.c icmp.c ip4.c ip4_frag.c ip4_addr.c
+LWIP_NETIF_SRC = ethernet.c
+LWIP_SRC = ${LWIP_CORE_SRC} ${LWIP_IPV4_SRC} ${LWIP_NETIF_SRC}
+
+EXAMPLES = pan_lwip_http_server
+
+pan_lwip_http_server: ${CORE_OBJ} ${COMMON_OBJ} ${CLASSIC_OBJ} ${SDP_CLIENT} ${PAN_OBJ} ${LWIP_SRC} btstack_ring_buffer.o btstack_network_lwip.o pan_lwip_http_server.o
+	${CC} $^ ${CFLAGS} ${LDFLAGS} -o $@
+
 
 
 # use pkg-config for portaudio
