@@ -45,6 +45,7 @@
 #include "lwip/init.h"
 #include "lwip/opt.h"
 #include "lwip/tcpip.h"
+#include "lwip/apps/httpd.h"
 #include "dhserver.h"
 
 // network types
@@ -292,10 +293,8 @@ static void network_setup(void){
     // start DHCP Server
     dhserv_init(&dhcp_config);
 
-#if 0
     // start HTTP Server
-    lwip_httpsserv_init();
-#endif
+    httpd_init();
 }
 
 // end of network code
