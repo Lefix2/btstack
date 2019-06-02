@@ -42,6 +42,11 @@
 #include "btstack_config.h"
 #include "btstack.h"
 
+#include "lwip/init.h"
+#include "lwip/opt.h"
+#include "lwip/tcpip.h"
+#include "dhserver.h"
+
 // network types
 #define NETWORK_TYPE_IPv4       0x0800
 #define NETWORK_TYPE_ARP        0x0806
@@ -245,12 +250,8 @@ static void pan_bnep_setup(void){
 // lwip code
 
 // DHCP Server
-#include "lwip/opt.h"
-#include "lwip/tcpip.h"
 
-#if 0
-
-// DHCP
+// DHCP Server Config
 
 #define NUM_DHCP_ENTRY 3
 
@@ -265,15 +266,11 @@ static dhcp_entry_t entries[NUM_DHCP_ENTRY] =
 static dhcp_config_t dhcp_config =
 {
     {192, 168, 7, 1}, 67, /* server address, port */
-    {192, 168, 7, 1},     /* dns server */
+    {0, 0, 0, 0},     /* dns server */
     "stm",                /* dns suffix */
     NUM_DHCP_ENTRY,       /* num entry */
     entries               /* entries */
 };
-
-#endif
-
-#include "lwip/init.h"
 
 /*!
  * @brief Initializes lwIP stack.
@@ -292,10 +289,10 @@ static void network_setup(void){
     // init lwIP stack
     lwip_init();
 
-#if 0
     // start DHCP Server
     dhserv_init(&dhcp_config);
 
+#if 0
     // start HTTP Server
     lwip_httpsserv_init();
 #endif

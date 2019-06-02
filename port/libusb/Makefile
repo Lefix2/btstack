@@ -46,10 +46,12 @@ VPATH  +=   ${BTSTACK_ROOT}/3rd-party/lwip/src/core/ipv6
 VPATH  +=   ${BTSTACK_ROOT}/3rd-party/lwip/src/netif
 CFLAGS += -I${BTSTACK_ROOT}/platform/lwip
 VPATH  +=   ${BTSTACK_ROOT}/platform/lwip
+CFLAGS += -I${BTSTACK_ROOT}/3rd-party/lwip-dhcp-server
+VPATH  +=   ${BTSTACK_ROOT}/3rd-party/lwip-dhcp-server
 LWIP_CORE_SRC  = init.c mem.c memp.c netif.c udp.c ip.c pbuf.c inet_chksum.c def.c tcp.c tcp_in.c tcp_out.c timeouts.c sys_arch.c
 LWIP_IPV4_SRC  = acd.c dhcp.c etharp.c icmp.c ip4.c ip4_frag.c ip4_addr.c
 LWIP_NETIF_SRC = ethernet.c
-LWIP_SRC = ${LWIP_CORE_SRC} ${LWIP_IPV4_SRC} ${LWIP_NETIF_SRC}
+LWIP_SRC = ${LWIP_CORE_SRC} ${LWIP_IPV4_SRC} ${LWIP_NETIF_SRC} dhserver.c
 
 EXAMPLES = pan_lwip_http_server
 
