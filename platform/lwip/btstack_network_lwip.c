@@ -61,6 +61,8 @@
 
 #if NO_SYS
 #include "btstack_ring_buffer.h"
+#include "btstack_run_loop.h"
+#include "lwip/timeouts.h"
 #else
 #include "btstack_run_loop_freertos.h"
 #endif
@@ -68,6 +70,8 @@
 /* Define those to better describe your network interface. */
 #define IFNAME0 'b'
 #define IFNAME1 't'
+
+#define LWIP_TIMER_INTERVAL_MS 25
 
 static void (*btstack_network_send_packet_callback)(const uint8_t * packet, uint16_t size);
 
@@ -81,8 +85,23 @@ static btstack_ring_buffer_t btstack_network_outgoing_queue;
 static QueueHandle_t btstack_network_outgoing_queue;
 #endif
 
+static btstack_timer_source_t lwip_timer;
+
 // next packet only modified from btstack context
 static struct pbuf * btstack_network_outgoing_next_packet;
+
+static void btstack_network_timeout_handler(btstack_timer_source_t * ts){
+
+    // process lwIP timers
+    sys_check_timeouts();
+
+    // check if link is still up
+    if ((btstack_netif.flags & NETIF_FLAG_LINK_UP) == 0) return;
+
+    // restart timer
+    btstack_run_loop_set_timer(ts, LWIP_TIMER_INTERVAL_MS);
+    btstack_run_loop_add_timer(ts);
+}
 
 static void btstack_network_outgoing_process(void * arg){
     UNUSED(arg);
@@ -295,6 +314,13 @@ int btstack_network_up(bd_addr_t network_address){
     // if up
     netif_set_up(&btstack_netif);
 
+#if NO_SYS
+    // start timer
+    btstack_run_loop_set_timer_handler(&lwip_timer, btstack_network_timeout_handler);
+    btstack_run_loop_set_timer(&lwip_timer, LWIP_TIMER_INTERVAL_MS);
+    btstack_run_loop_add_timer(&lwip_timer);
+#endif
+
     return 0;
 }
 
@@ -341,6 +367,7 @@ void btstack_network_process_packet(const uint8_t * packet, uint16_t size){
  */
 int btstack_network_down(void){
     log_info("btstack_network_up down");
+
     // link is down
     btstack_netif.flags &= ~NETIF_FLAG_LINK_UP;
 
